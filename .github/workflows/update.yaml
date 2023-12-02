@@ -1,0 +1,108 @@
+name: Update MFT files
+
+on:
+  workflow_dispatch:
+    inputs:
+      withtag:
+        type: boolean
+        required: false
+        description: Whether to create a tag or not
+        default: true
+  push:
+    branches: [ main ]
+  schedule:
+    - cron: "0 1 * * *" # Run every day at 1am UTC
+
+# Give the default GITHUB_TOKEN write permission to commit and push the
+# added or changed files to the repository.
+permissions:
+  contents: write
+
+jobs:
+  update:
+    name: Update MFT files
+    runs-on: [ ubuntu-latest ]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-tags: true
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.21
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Get next version
+        uses: reecetech/version-increment@2023.10.2
+        id: version
+        with:
+          scheme: calver
+          increment: patch
+
+      - name: Download MFT files
+        run: go run . download
+
+      # https://github.com/stefanzweifel/git-auto-commit-action#example
+      # TODO: maybe commit to another branch
+      - name: Commit changes if any
+        id: auto-commit-action
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Update MFT files
+          tagging_message: ${{ steps.version.outputs.version }}
+
+      - name: Copy PDF files to version directory
+        if: ${{ steps.auto-commit-action.outputs.changes_detected == 'true' }}
+        run: |
+          mkdir -p ${{ steps.version.outputs.version }}
+          cp -v ./downloads/*.pdf ${{ steps.version.outputs.version }}
+
+      # TODO: Path issue https://github.com/adityak74/google-drive-upload-git-action/issues/21
+      # TODO: Fork action and make some output variables (e.g. created folderId if mirrorDirectoryStructure)
+      - name: Upload to Google Drive
+        if: ${{ steps.auto-commit-action.outputs.changes_detected == 'true' }}
+        uses: adityak74/google-drive-upload-git-action@main
+        with:
+          credentials: ${{ secrets.DRIVE_CREDENTIALS }}
+          folderId: ${{ secrets.DRIVE_FOLDER_ID }}
+          filename: ${{ steps.version.outputs.version }}/*.pdf # Will upload all PDF files in the directory
+          mirrorDirectoryStructure: true # Will create the directory structure in Google Drive using the provided version
+          # overwrite: true # https://github.com/adityak74/google-drive-upload-git-action/issues/21
+          mimeType: application/pdf
+
+      # TODO: delete the older latest directory
+      # Uncomment this to create the latest directory. Can't delete the older latest directory so it's not used.
+#      - name: Make latest directory
+#        if: ${{ steps.auto-commit-action.outputs.changes_detected == 'true' && success() }}
+#        run: go run . drive --service-account-key ${{ secrets.DRIVE_CREDENTIALS }} add --parentFolderID ${{ secrets.DRIVE_FOLDER_ID }} --byName "${{ steps.version.outputs.version }}"
+
+      - name: Notify on Pushover
+        if: ${{ steps.auto-commit-action.outputs.changes_detected == 'true' && success() }}
+        uses: umahmood/pushover-actions@main
+        env:
+          PUSHOVER_TOKEN: ${{ secrets.PUSHOVER_TOKEN }}
+          PUSHOVER_USER: ${{ secrets.PUSHOVER_USER }}
+        with:
+          status: ${{ job.status }}
+          title: "[MFT] New files uploaded."
+          message: "New folder created on Google Drive ${{ steps.version.outputs.version }}"
+          url_title: View on Google Drive
+          url: "https://drive.google.com/drive/folders/${{ secrets.DRIVE_FOLDER_ID }}"
+
+      - name: Notify on Pushover
+        if: ${{ steps.auto-commit-action.outputs.changes_detected == 'true' && failure() }}
+        uses: umahmood/pushover-actions@main
+        env:
+          PUSHOVER_TOKEN: ${{ secrets.PUSHOVER_TOKEN }}
+          PUSHOVER_USER: ${{ secrets.PUSHOVER_USER }}
+        with:
+          status: ${{ job.status }}
+          title: "[MFT] Workflow failed."
+          message: "Workflow failed. Please check the logs."
+          url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          url_title: View workflow on GitHub

@@ -6,7 +6,7 @@ require (
 	github.com/chromedp/cdproto v0.0.0-20231011050154-1d073bb38998
 	github.com/chromedp/chromedp v0.9.3
 	github.com/spf13/cobra v1.8.0
-	google.golang.org/api v0.152.0
+	google.golang.org/api v0.153.0
 )
 
 require (

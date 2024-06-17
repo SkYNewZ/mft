@@ -5,7 +5,7 @@ go 1.21.4
 require (
 	github.com/chromedp/cdproto v0.0.0-20240202021202-6d0b6a386732
 	github.com/chromedp/chromedp v0.9.5
-	github.com/spf13/cobra v1.8.0
+	github.com/spf13/cobra v1.8.1
 	google.golang.org/api v0.183.0
 )
 

@@ -1,6 +1,7 @@
 module github.com/SkYNewZ/mft
 
-go 1.21.4
+go 1.23
+
 toolchain go1.23.2
 
 require (

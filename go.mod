@@ -6,7 +6,7 @@ toolchain go1.23.2
 
 require (
 	github.com/chromedp/cdproto v0.0.0-20241022234722-4d5d5faf59fb
-	github.com/chromedp/chromedp v0.11.1
+	github.com/chromedp/chromedp v0.11.2
 	github.com/spf13/cobra v1.8.0
 	google.golang.org/api v0.183.0
 )

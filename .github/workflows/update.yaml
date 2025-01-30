@@ -21,7 +21,7 @@ permissions:
 jobs:
   update:
     name: Update MFT files
-    runs-on: [ ubuntu-latest ]
+    runs-on: ubuntu-22.04 # Update when chromium bug mentioned https://github.com/puppeteer/puppeteer/issues/12818 is resolved
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

@@ -7,7 +7,7 @@ toolchain go1.23.2
 require (
 	github.com/chromedp/cdproto v0.0.0-20250120090109-d38428e4d9c8
 	github.com/chromedp/chromedp v0.12.1
-	github.com/spf13/cobra v1.8.0
+	github.com/spf13/cobra v1.9.1
 	google.golang.org/api v0.183.0
 )
 
@@ -31,7 +31,7 @@ require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/mailru/easyjson v0.9.0 // indirect
-	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/spf13/pflag v1.0.6 // indirect
 	github.com/stretchr/testify v1.9.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.49.0 // indirect
